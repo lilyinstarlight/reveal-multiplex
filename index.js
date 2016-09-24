@@ -47,7 +47,7 @@ app.get("/token", function(req, res) {
 		var rand = Math.floor(Math.random()*9999999);
 		var secret = ts.toString() + rand.toString();
 		ids[req.query.presentation] = createHash(secret);
-		res.send({secret: secret, id: ids[req.query.presentation]});
+		res.send(secret);
 	}
 });
 
