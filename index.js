@@ -48,7 +48,8 @@ app.get("/token", function(req, res) {
 		var rand = Math.floor(Math.random()*9999999);
 		var secret = ts.toString() + rand.toString();
 		ids[req.query.presentation] = createHash(secret);
-		res.send(secret);
+		res.write(secret);
+		res.end();
 	}
 });
 
@@ -60,7 +61,8 @@ app.get("/id", function(req, res) {
 	}
 	else {
 		res.writeHead(200, {'Content-Type': 'text/plain'});
-		res.send(ids[req.query.presentation]);
+		res.write(ids[req.query.presentation]);
+		res.end();
 	}
 });
 
