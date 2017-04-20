@@ -43,6 +43,7 @@ app.get("/token", function(req, res) {
 		res.end();
 	}
 	else {
+		res.writeHead(200, {'Content-Type': 'text/plain'});
 		var ts = new Date().getTime();
 		var rand = Math.floor(Math.random()*9999999);
 		var secret = ts.toString() + rand.toString();
@@ -58,6 +59,7 @@ app.get("/id", function(req, res) {
 		res.end();
 	}
 	else {
+		res.writeHead(200, {'Content-Type': 'text/plain'});
 		res.send(ids[req.query.presentation]);
 	}
 });
