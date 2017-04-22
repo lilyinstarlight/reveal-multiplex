@@ -12,6 +12,7 @@ io = io(server);
 
 var opts = {
 	port: process.env.PORT || 1948,
+	expire: 24
 };
 
 var ids = {};
@@ -47,9 +48,13 @@ app.get("/token", function(req, res) {
 		var ts = new Date().getTime();
 		var rand = Math.floor(Math.random()*9999999);
 		var secret = ts.toString() + rand.toString();
-		ids[req.query.presentation] = createHash(secret);
 		res.write(secret);
 		res.end();
+
+		ids[req.query.presentation] = createHash(secret);
+		setTimeout(function(idx) {
+			delete ids[idx];
+		}, expire*3600000, req.query.presentation);
 	}
 });
 
@@ -71,11 +76,10 @@ var createHash = function(secret) {
 	return(cipher.final('hex'));
 };
 
-// Actually listen
-server.listen( opts.port || null );
+server.listen(opts.port || null);
 
 var brown = '\033[33m',
 	green = '\033[32m',
 	reset = '\033[0m';
 
-console.log( brown + "reveal.js:" + reset + " Multiplex running on port " + green + opts.port + reset );
+console.log(brown + "reveal.js:" + reset + " Multiplex running on port " + green + opts.port + reset);
