@@ -14,6 +14,7 @@ io = io(server);
 
 var opts = {
     port: process.env.PORT || 1948,
+    auth: Object.keys(creds).length ? auth(creds) : function(req, res, next) { return next() },
     expire: 24
 };
 
@@ -35,7 +36,7 @@ app.get('/', function(req, res) {
     res.end();
 });
 
-app.get('/token', auth(creds), function(req, res) {
+app.get('/token', opts.auth, function(req, res) {
     if (typeof req.query.presentation === 'undefined') {
         res.writeHead(200, {'Content-Type': 'text/html'});
         res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
