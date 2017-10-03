@@ -29,14 +29,14 @@ io.on('connection', function(socket) {
 
 app.get("/", function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write('<!DOCTYPE html><html><head><title>FoosterNET Reveal.js Multiplex</title></head><body><header><h1>FoosterNET Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
+    res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
     res.end();
 });
 
 app.get("/token", function(req, res) {
     if (typeof req.query.presentation === 'undefined') {
         res.writeHead(200, {'Content-Type': 'text/html'});
-        res.write('<!DOCTYPE html><html><head><title>FoosterNET Reveal.js Multiplex</title></head><body><header><h1>FoosterNET Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
+        res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
         res.end();
     }
     else {
@@ -55,9 +55,14 @@ app.get("/token", function(req, res) {
 });
 
 app.get("/id", function(req, res) {
-    if (typeof req.query.presentation === 'undefined' || !(req.query.presentation in ids)) {
+    if (typeof req.query.presentation === 'undefined') {
         res.writeHead(200, {'Content-Type': 'text/html'});
-        res.write('<!DOCTYPE html><html><head><title>FoosterNET Reveal.js Multiplex</title></head><body><header><h1>FoosterNET Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
+        res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
+        res.end();
+    }
+    else if (!(req.query.presentation in ids)) {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.write('0000000000000000');
         res.end();
     }
     else {
