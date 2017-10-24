@@ -22,7 +22,7 @@ var ids = {};
 
 io.on('connection', function(socket) {
     socket.on('multiplex-statechanged', function(data) {
-        if (typeof data.secret == 'undefined' || data.secret == null || data.secret === '') return;
+        if (typeof data.secret === 'undefined' || data.secret === null || data.secret === '') return;
         if (createHash(data.secret) === data.socketId) {
             data.secret = null;
             socket.broadcast.emit(data.socketId, data);
