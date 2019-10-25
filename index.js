@@ -23,37 +23,46 @@ var ids = {};
 io.on('connection', function(socket) {
     socket.on('multiplex-statechanged', function(data) {
         if (typeof data.secret === 'undefined' || data.secret === null || data.secret === '') return;
-        if (createHash(data.secret) === data.socketId) {
-            data.secret = null;
-            socket.broadcast.emit(data.socketId, data);
-        };
+        if (!Object.values(ids).includes(data.socketId)) return;
+
+        crypto.scrypt(data.secret, data.secret.split('.')[2], 32, function(err, hash) {
+            if (hash.toString('hex') === data.socketId) {
+                data.secret = null;
+                socket.broadcast.emit(data.socketId, data);
+            }
+        });
     });
 });
 
 app.get('/', function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
+    res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" id="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
     res.end();
 });
 
 app.get('/token', opts.auth, function(req, res) {
     if (typeof req.query.presentation === 'undefined') {
         res.writeHead(200, {'Content-Type': 'text/html'});
-        res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" token="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
+        res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" id="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
         res.end();
     }
     else {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
         var ts = new Date().getTime();
-        var rand = Math.floor(Math.random()*9999999);
-        var secret = ts.toString() + rand.toString();
-        res.write(secret);
-        res.end();
+        var rand = crypto.randomBytes(16);
+        var salt = crypto.randomBytes(16);
+        var secret = ts.toString() + '.' + rand.toString('hex') + '.' + salt.toString('hex');
 
-        ids[req.query.presentation] = createHash(secret);
-        setTimeout(function(idx) {
-            delete ids[idx];
-        }, opts.expire*3600000, req.query.presentation);
+        crypto.scrypt(secret, secret.split('.')[2], 32, function(err, hash) {
+            ids[req.query.presentation] = hash.toString('hex');
+            setTimeout(function(idx) {
+                delete ids[idx];
+            }, opts.expire*3600000, req.query.presentation);
+
+            var cors = req.get('Origin') ? {'Access-Control-Allow-Origin': req.get('Origin'), 'Access-Control-Allow-Credentials': 'true'} : {};
+            res.writeHead(200, {'Content-Type': 'text/plain', 'Vary': 'Origin', ...cors});
+            res.write(secret);
+            res.end();
+        });
     }
 });
 
@@ -63,22 +72,19 @@ app.get('/id', function(req, res) {
         res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
         res.end();
     }
-    else if (!(req.query.presentation in ids)) {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
+    else if (!Object.keys(ids).includes(req.query.presentation)) {
+        var cors = req.get('Origin') ? {'Access-Control-Allow-Origin': req.get('Origin'), 'Access-Control-Allow-Credentials': 'true'} : {};
+        res.writeHead(200, {'Content-Type': 'text/plain', 'Vary': 'Origin', ...cors});
         res.write('');
         res.end();
     }
     else {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
+        var cors = req.get('Origin') ? {'Access-Control-Allow-Origin': req.get('Origin'), 'Access-Control-Allow-Credentials': 'true'} : {};
+        res.writeHead(200, {'Content-Type': 'text/plain', 'Vary': 'Origin', ...cors});
         res.write(ids[req.query.presentation]);
         res.end();
     }
 });
-
-var createHash = function(secret) {
-    var cipher = crypto.createCipher('blowfish', secret);
-    return(cipher.final('hex'));
-};
 
 server.listen(opts.port || null);
 

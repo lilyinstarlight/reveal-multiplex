@@ -1,5 +1,5 @@
 var creds = {
-    users: {user: password},
+    users: {'reveal': 'password'},
     challenge: true,
     realm: 'reveal-multiplex'
 };
