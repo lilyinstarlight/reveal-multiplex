@@ -24,11 +24,13 @@ io.on('connection', function(socket) {
     socket.on('multiplex-statechanged', function(data) {
         if (typeof data.secret === 'undefined' || data.secret === null || data.secret === '') return;
         if (!Object.values(ids).includes(data.socketId)) return;
+        if (data.secret.split('.').length !== 3) return;
 
         crypto.scrypt(data.secret, data.secret.split('.')[2], 32, function(err, hash) {
             if (hash.toString('hex') === data.socketId) {
-                data.secret = null;
-                socket.broadcast.emit(data.socketId, data);
+                var broadcast = Object.assign({}, data);
+                delete broadcast.secret;
+                socket.broadcast.emit(data.socketId, broadcast);
             }
         });
     });
