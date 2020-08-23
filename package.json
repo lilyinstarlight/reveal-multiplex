@@ -1,8 +1,8 @@
 {
-  "name": "reveal-multiplex",
-  "version": "1.2.0",
+  "name": "fooster-reveal-multiplex",
+  "version": "1.3.0",
   "description": "reveal.js multiplex server",
-  "homepage": "https://github.com/fkmclane/reveal-multiplex",
+  "homepage": "https://github.com/lilyinstarlight/reveal-multiplex",
   "scripts": {
     "start": "node index.js"
   },
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fkmclane/reveal-multiplex.git"
+    "url": "https://github.com/lilyinstarlight/reveal-multiplex.git"
   },
   "license": "MIT"
 }

@@ -20,6 +20,15 @@ var opts = {
 
 var ids = {};
 
+var cors = function(req, res, next) {
+    if (req.get('Origin')) {
+        res.header('Access-Control-Allow-Origin', req.get('Origin'));
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
+    res.header('Vary', 'Origin');
+    next();
+};
+
 io.on('connection', function(socket) {
     socket.on('multiplex-statechanged', function(data) {
         if (typeof data.secret === 'undefined' || data.secret === null || data.secret === '') return;
@@ -42,7 +51,7 @@ app.get('/', function(req, res) {
     res.end();
 });
 
-app.get('/token', opts.auth, function(req, res) {
+app.get('/token', cors, opts.auth, function(req, res) {
     if (typeof req.query.presentation === 'undefined') {
         res.writeHead(200, {'Content-Type': 'text/html'});
         res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking to make a presentation token and id, you can make one by typing in the presentation name below.</p><form action="/token" method="get"><label for="token_presentation">Presentation: </label><input type="text" id="token_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
@@ -60,29 +69,26 @@ app.get('/token', opts.auth, function(req, res) {
                 delete ids[idx];
             }, opts.expire*3600000, req.query.presentation);
 
-            var cors = req.get('Origin') ? {'Access-Control-Allow-Origin': req.get('Origin'), 'Access-Control-Allow-Credentials': 'true'} : {};
-            res.writeHead(200, {'Content-Type': 'text/plain', 'Vary': 'Origin', ...cors});
+            res.writeHead(200, {'Content-Type': 'text/plain'});
             res.write(secret);
             res.end();
         });
     }
 });
 
-app.get('/id', function(req, res) {
+app.get('/id', cors, function(req, res) {
     if (typeof req.query.presentation === 'undefined') {
         res.writeHead(200, {'Content-Type': 'text/html'});
         res.write('<!DOCTYPE html><html><head><title>Reveal.js Multiplex</title></head><body><header><h1>Reveal.js Multiplex</h1></header><br/><br/><section><p>If you are looking for a presentation id, you can get it by typing in the presentation name below.</p><form action="/id" method="get"><label for="id_presentation">Presentation: </label><input type="text" id="id_presentation" name="presentation" placeholder="presentation"/><br/><br/><input type="submit"/></form></section></body></html>');
         res.end();
     }
     else if (!Object.keys(ids).includes(req.query.presentation)) {
-        var cors = req.get('Origin') ? {'Access-Control-Allow-Origin': req.get('Origin'), 'Access-Control-Allow-Credentials': 'true'} : {};
-        res.writeHead(200, {'Content-Type': 'text/plain', 'Vary': 'Origin', ...cors});
+        res.writeHead(200, {'Content-Type': 'text/plain'});
         res.write('');
         res.end();
     }
     else {
-        var cors = req.get('Origin') ? {'Access-Control-Allow-Origin': req.get('Origin'), 'Access-Control-Allow-Credentials': 'true'} : {};
-        res.writeHead(200, {'Content-Type': 'text/plain', 'Vary': 'Origin', ...cors});
+        res.writeHead(200, {'Content-Type': 'text/plain'});
         res.write(ids[req.query.presentation]);
         res.end();
     }
