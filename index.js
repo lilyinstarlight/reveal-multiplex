@@ -10,7 +10,7 @@ var app         = express();
 var staticDir   = express.static;
 var server      = http.createServer(app);
 
-io = io(server);
+io = io(server, { cors: { origin: true, methods: ['GET', 'POST'] } });
 
 var opts = {
     port: process.env.PORT || 1948,
