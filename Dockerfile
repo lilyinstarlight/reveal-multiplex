@@ -2,7 +2,9 @@ FROM node:alpine as build
 
 ENV NODE_ENV production
 
-COPY . .
+COPY . /app
+
+WORKDIR /app
 
 RUN npm install
 
@@ -27,10 +29,12 @@ LABEL maintainer="Lily Foster <lily@lily.flowers>" \
 
 ENV NODE_ENV production
 
-COPY . .
-COPY --from=build node_modules ./node_modules
+COPY . /app
+COPY --from=build /app/node_modules /app/node_modules
 
 EXPOSE 1948
+
+WORKDIR /app
 
 USER node
 
