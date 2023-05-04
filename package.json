@@ -9,7 +9,7 @@
   "dependencies": {
     "express": "~4.17",
     "express-basic-auth": "~1.2",
-    "socket.io": "~4.5"
+    "socket.io": "~4.6"
   },
   "repository": {
     "type": "git",
